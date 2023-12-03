@@ -118,7 +118,118 @@ func containsOnlyDot(str string) bool {
 }
 
 func part2(input string) int {
-	return 0
+
+	parsed := parseInput(input)
+	sum := 0
+
+	for i, line := range parsed {
+		for j, char := range line {
+			if char == '*' {
+				numbers := findAllAdjacentNumbers(i, j, parsed)
+				if len(numbers) > 1 {
+					ans := numbers[0]
+					for k := 1; k < len(numbers); k++ {
+						ans = ans * numbers[k]
+					}
+					sum += ans
+				}
+			}
+		}
+	}
+	return sum
+}
+
+func findAllAdjacentNumbers(i int, j int, strs []string) []int {
+	numbers := []int{}
+	number := -1
+
+	// check above
+	idxLineAbove := i - 1
+	if idxLineAbove >= 0 {
+		if !unicode.IsDigit(rune(strs[idxLineAbove][j])) {
+			if j-1 >= 0 {
+				number = getNumber(idxLineAbove, j-1, strs)
+				if number != -1 {
+					numbers = append(numbers, number)
+				}
+			}
+			if j+1 < len(strs[idxLineAbove]) {
+				number = getNumber(idxLineAbove, j+1, strs)
+				if number != -1 {
+					numbers = append(numbers, number)
+				}
+			}
+		} else {
+			number = getNumber(idxLineAbove, j, strs)
+			numbers = append(numbers, number)
+		}
+	}
+
+	// check left
+	if j-1 >= 0 {
+		number = getNumber(i, j-1, strs)
+		if number != -1 {
+			numbers = append(numbers, number)
+		}
+	}
+
+	// check right
+	if j+1 < len(strs[i]) {
+		number = getNumber(i, j+1, strs)
+		if number != -1 {
+			numbers = append(numbers, number)
+		}
+	}
+
+	// check below
+	idxLineBelow := i + 1
+	if idxLineBelow < len(strs) {
+		if !unicode.IsDigit(rune(strs[idxLineBelow][j])) {
+			if j-1 >= 0 {
+				number = getNumber(idxLineBelow, j-1, strs)
+				if number != -1 {
+					numbers = append(numbers, number)
+				}
+			}
+			if j+1 < len(strs[idxLineBelow]) {
+				number = getNumber(idxLineBelow, j+1, strs)
+				if number != -1 {
+					numbers = append(numbers, number)
+				}
+			}
+		} else {
+			number = getNumber(idxLineBelow, j, strs)
+			numbers = append(numbers, number)
+		}
+	}
+
+	return numbers
+}
+
+func getNumber(i int, j int, strs []string) int {
+
+	result := []rune{}
+
+	if !unicode.IsDigit(rune(strs[i][j])) {
+		return -1
+	}
+
+	result = append(result, rune(strs[i][j]))
+
+	for x := j - 1; x >= 0; x-- {
+		if !unicode.IsDigit(rune(strs[i][x])) {
+			break
+		}
+		result = append([]rune{rune(strs[i][x])}, result...)
+	}
+	for x := j + 1; x < len(strs[i]); x++ {
+		if !unicode.IsDigit(rune(strs[i][x])) {
+			break
+		}
+		result = append(result, rune(strs[i][x]))
+	}
+
+	return util.MustAtoi(string(result))
 }
 
 func parseInput(input string) (ans []string) {
