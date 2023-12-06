@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
+	"math"
 	"regexp"
 	"strings"
 
@@ -74,6 +75,10 @@ func part2(input string) int {
 	}
 	goalDistance := cast.ToInt(distanceStr)
 
+	return p2Brute(time, goalDistance)
+}
+
+func p2Brute(time int, goalDistance int) int {
 	numberOfWays := 0
 	for chargeTime := 1; chargeTime < time; chargeTime++ {
 		distance := chargeTime * (time - chargeTime)
@@ -81,8 +86,16 @@ func part2(input string) int {
 			numberOfWays++
 		}
 	}
-
 	return numberOfWays
+}
+
+func p2Quadratic(time int, goalDistance int) int {
+	t := float64(time)
+
+	x1 := (t + math.Sqrt(t*t-4*float64(goalDistance))) / 2
+	x2 := (t - math.Sqrt(t*t-4*float64(goalDistance))) / 2
+
+	return int(math.Floor(x1) - math.Ceil(x2))
 }
 
 func parseInput(input string) (times []int, distances []int) {
