@@ -90,31 +90,67 @@ func part2(input string) int { // TODO: fix this
 	instructions := parsed[0]
 
 	instructionMap := map[string]instruction{}
+	instructionRunners := make([]string, 0)
 
 	for i := 2; i < len(parsed); i++ {
 		instruction := parseLine(parsed[i])
 		instructionMap[instruction.op] = instruction
+		if instruction.op[2] == 'A' {
+			instructionRunners = append(instructionRunners, instruction.op)
+		}
 	}
 
-	executionCount := 0
-	currentInstruction := instructionMap["AAA"]
+	executionCounts := make([]int, len(instructionRunners))
 	currentInstructionIdx := 0
 
-	for true {
-		instruction := instructions[currentInstructionIdx]
-		if string(currentInstruction.op) == "ZZZ" {
-			return executionCount
+	for i := 0; i < len(instructionRunners); i++ {
+		executionCount := 0
+		for {
+			if instructionRunners[i][2] == 'Z' {
+				break
+			}
+
+			instruction := instructions[currentInstructionIdx]
+			if string(instruction) == "R" {
+				instructionRunners[i] = instructionMap[instructionRunners[i]].right
+			} else {
+				instructionRunners[i] = instructionMap[instructionRunners[i]].left
+			}
+			executionCount++
+			currentInstructionIdx = (currentInstructionIdx + 1) % len(instructions)
 		}
-		executionCount++
-		if string(instruction) == "R" {
-			currentInstruction = instructionMap[currentInstruction.right]
-		} else {
-			currentInstruction = instructionMap[currentInstruction.left]
-		}
-		currentInstructionIdx = (currentInstructionIdx + 1) % len(instructions)
+		executionCounts[i] = executionCount
 	}
 
-	return 0
+	return lcm(executionCounts[0], executionCounts[1], executionCounts[2:]...)
+}
+
+func gcd(a, b int) int {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+
+func lcm(a, b int, integers ...int) int {
+	result := a * b / gcd(a, b)
+
+	for i := 0; i < len(integers); i++ {
+		result = lcm(result, integers[i])
+	}
+
+	return result
+}
+
+func allInstructionsAreTerminal(instructions []string) bool {
+	for _, instruction := range instructions {
+		if instruction[2] != 'Z' {
+			return false
+		}
+	}
+	return true
 }
 
 func parseInput(input string) (ans []string) {
